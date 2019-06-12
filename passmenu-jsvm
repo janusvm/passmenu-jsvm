@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -f $HOME/.dmenurc ]; then
+    . $HOME/.dmenurc
+fi
+
+passmenu $@ $DMENU_OPTIONS -p "pass"
