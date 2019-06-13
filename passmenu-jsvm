@@ -1,7 +1,38 @@
 #!/bin/bash
 
+shopt -s nullglob globstar
+
+# Should the password be typed instead of copied?
+typeit=0
+if [[ $1 == "--type" ]]; then
+	typeit=1
+	shift
+fi
+
+# Load $DMENU_OPTIONS
 if [ -f $HOME/.dmenurc ]; then
     . $HOME/.dmenurc
 fi
+dmenu_cmd="dmenu $DMENU_OPTIONS -l 20 -w 500"
 
-passmenu $@ $DMENU_OPTIONS -p "pass"
+# Use custom pass directory, if set
+prefix=${PASSWORD_STORE_DIR-~/.password-store}
+
+# List entries (directories with .gpg files)
+pass_entries=($(ls "$prefix"/**/*.gpg | xargs dirname | uniq))
+pass_entries=("${pass_entries[@]#"$prefix"/}")
+entry=$(printf "%s\n" "${pass_entries[@]}" | $dmenu_cmd -p "pass entry")
+[[ -n $entry ]] || exit
+
+# List available fields (.gpg files)
+field=$(pass ls "$entry" | tail -n+2 | sed -E 's/^\W+//' | $dmenu_cmd -p "entry field")
+[[ -n $field ]] || exit
+
+password="$entry/$field"
+
+if [[ $typeit -eq 0 ]]; then
+	pass show -c "$password" 2>/dev/null
+else
+	pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } |
+		xdotool type --clearmodifiers --file -
+fi
