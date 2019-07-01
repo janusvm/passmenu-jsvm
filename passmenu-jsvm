@@ -2,11 +2,13 @@
 
 shopt -s nullglob globstar
 
-# Should the password be typed instead of copied?
+# Should the entry/field be typed instead of copied?
 typeit=0
+autotypeit=0
 if [[ $1 == "--type" ]]; then
-	typeit=1
-	shift
+    typeit=1
+elif [[ $1 == "--autotype" ]]; then
+    autotypeit=1
 fi
 
 # Load $DMENU_OPTIONS
@@ -24,15 +26,30 @@ pass_entries=("${pass_entries[@]#"$prefix"/}")
 entry=$(printf "%s\n" "${pass_entries[@]}" | $dmenu_cmd -p "pass entry")
 [[ -n $entry ]] || exit
 
-# List available fields (.gpg files)
-field=$(pass ls "$entry" | tail -n+2 | sed -E 's/^\W+//' | $dmenu_cmd -p "entry field")
-[[ -n $field ]] || exit
+typefield () {
+    pass show "$1" | { IFS= read -r pass; printf %s "$pass"; } |
+        xdotool type --clearmodifiers --file -
+}
 
-password="$entry/$field"
-
-if [[ $typeit -eq 0 ]]; then
-	pass show -c "$password" 2>/dev/null
+if [[ $autotypeit -eq 1 ]]; then
+    # Type fields `username` and `password` from entry
+    username="$entry/username"
+    password="$entry/password"
+    typefield "$username"
+    xdotool key Tab
+    typefield "$password"
+    xdotool key Return
 else
-	pass show "$password" | { IFS= read -r pass; printf %s "$pass"; } |
-		xdotool type --clearmodifiers --file -
+    # List available fields (.gpg files)
+    field=$(pass ls "$entry" | tail -n+2 | sed -E 's/^\W+//' |
+                $dmenu_cmd -p "entry field")
+    [[ -n $field ]] || exit
+
+    password="$entry/$field"
+
+    if [[ $typeit -eq 0 ]]; then
+	pass show -c "$password" 2>/dev/null
+    else
+        typefield "$password"
+    fi
 fi
