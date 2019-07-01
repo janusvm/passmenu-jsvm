@@ -7,7 +7,7 @@ Adaptation of [passmenu], a [dmenu]-based interface to [pass], to better suit my
 Each _entry_ is comprised of a subdirectory with a `.gpg` file for each _field_.
 A field contains a single piece of information, e.g. username, password, url, etc.
 
-## Installation and usage
+## Installation
 
 Clone the repository and symlink `passmenu-jsvm` to a location on your system's `$PATH`, e.g.
 
@@ -15,9 +15,12 @@ Clone the repository and symlink `passmenu-jsvm` to a location on your system's 
 $ ln -s passmenu-jsvm ~/.local/bin/passmenu-jsvm
 ```
 
-Running `passmenu-jsvm` will first prompt for the entry, and when an entry is selected, it will then prompt for the desired field.
-The contents of the selected field is copied to the clipboard.
-Like [passmenu], the flag `--type` will type out the field with [xdotool].
+
+## Usage
+
+  * `passmenu-jsvm`: select an entry, then a field of that entry, then copy it to the clipboard
+  * `passmenu-jsvm --type`: select an entry, then a field of that entry, then type it using [xdotool]
+  * `passmenu-jsvm --autotype`: select an entry, then type `<username><Tab><password><Ret>` using [xdotool]
 
 Options can be passed to [dmenu] by defining the variable `$DMENU_OPTIONS` in `~/.dmenurc`.
 For example, I set the font and colours in mine:
@@ -36,7 +39,7 @@ DMENU_OPTIONS="-fn $DMENU_FN -nb $DMENU_NB -nf $DMENU_NF -sf $DMENU_SF -sb $DMEN
 
 ## Tips
 
-- Bind `passmenu-jsvm --type` to a key, e.g. <kbd>Super</kbd>+<kbd>p</kbd> for very easy access
+- Bind `passmenu-jsvm --type`/`--autotype` to a key, e.g. <kbd>Super</kbd>+<kbd>p</kbd> for very easy access
 
 [passmenu]: https://git.zx2c4.com/password-store/tree/contrib/dmenu
 [dmenu]: https://tools.suckless.org/dmenu
